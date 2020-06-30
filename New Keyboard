@@ -1,0 +1,104 @@
+#!/bin/python3
+
+import math
+import os
+import random
+import re
+import sys
+
+#
+# Complete the 'receivedText' function below.
+#
+# The function is expected to return a STRING.
+# The function accepts STRING S as parameter.
+#
+
+def _receivedText(S):
+    numlock_on = True
+    d_q = []
+    index = 0
+    for val in S:
+        if val == "*":
+            if index > 0:
+                index -= 1
+                d_q.pop(index)
+        elif val == "#":
+            numlock_on = not numlock_on
+        elif val == "<":
+            index = 0
+        elif val == ">":
+            index = len(d_q)
+        else:
+            if not numlock_on and val in "1234567890":
+                pass
+            else:
+                d_q.insert(index, val)
+                index += 1
+
+    result = "".join(d_q)
+    return result
+
+
+class Node:
+    def __init__(self, val="", parent=None, child=None):
+        self.val = val
+        self.parent = parent
+        self.child = child
+
+
+def receivedText(S):
+    if len(S) < 1000:
+        return _receivedText(S)
+    numlock_on = True
+
+    left_end = Node()
+    right_end = Node()
+    left_end.child = right_end
+    right_end.parent = left_end
+    current = left_end
+    for val in S:
+        if val == "*":
+            if current != left_end:
+                current.parent.child = current.child
+                current.child.parent = current.parent
+                current = current.parent
+        elif val == "#":
+            numlock_on = not numlock_on
+        elif val == "<":
+            current = left_end
+        elif val == ">":
+            current = right_end.parent
+        else:
+            if not numlock_on and val in "1234567890":
+                pass
+            else:
+                new_node = Node(val, current, current.child)
+                current.child = new_node
+                current = new_node
+
+    # result = [""] * len(S)
+    # i = 0
+    # while left_end:
+    #     result[i] = left_end.val
+    #     left_end = left_end.child
+    #     i += 1
+    result = []
+    while left_end:
+        result.append(left_end.val)
+        left_end = left_end.child
+    result = "".join(result)
+    return result
+
+
+# print(receivedText("HE*<LR>O")) # LLHO
+
+if __name__ == '__main__':
+    fptr = open(os.environ['OUTPUT_PATH'], 'w')
+
+    S = input()
+
+    result = receivedText(S)
+
+    fptr.write(result + '\n')
+
+    fptr.close()
